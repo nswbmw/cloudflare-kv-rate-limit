@@ -1,0 +1,12 @@
+{
+  "account_id": "xxx",
+  "name": "cloudflare-kv-rate-limit",
+  "main": "example.js",
+  "compatibility_date": "2025-10-20",
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "xxx"
+    }
+  ]
+}
