@@ -1,6 +1,6 @@
 {
   "name": "cloudflare-kv-rate-limit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cloudflare KV-based rate limiter.",
   "main": "./dist/cjs/CloudflareKVRateLimiter.js",
   "type": "module",
