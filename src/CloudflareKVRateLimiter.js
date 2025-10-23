@@ -17,11 +17,12 @@ export function CloudflareKVRateLimiter (opts = {}) {
   const period = Math.floor(opts.period)
   const interval = Math.floor(opts.interval ?? 0)
 
-  assert(store && typeof store.get === 'function' && typeof store.put === 'function', '.store (Cloudflare KV) required with get/put methods')
-  assert(typeof prefix === 'string' && prefix.length > 0, '.prefix must be a non-empty string')
-  assert(Number.isFinite(limit) && limit >= 1, '.limit must be >= 1')
-  assert(Number.isFinite(period) && period >= 60, '.period must be >= 60 seconds (Cloudflare KV TTL minimum)')
-  assert(Number.isFinite(interval) && interval >= 0, '.interval must be >= 0')
+  assert(store && typeof store.get === 'function' && typeof store.put === 'function', 'store (Cloudflare KV) required with get/put methods')
+  assert(typeof prefix === 'string' && prefix.length > 0, 'prefix must be a non-empty string')
+  assert(Number.isFinite(limit) && limit >= 1, 'limit must be >= 1')
+  assert(Number.isFinite(period) && period >= 60, 'period must be >= 60 seconds (Cloudflare KV TTL minimum)')
+  assert(Number.isFinite(interval) && interval >= 0, 'interval must be >= 0')
+  assert(interval <= period, 'interval must be <= period')
 
   const periodMs = period * 1000
   const intervalMs = interval * 1000

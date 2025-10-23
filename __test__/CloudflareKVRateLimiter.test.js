@@ -39,28 +39,33 @@ describe('CloudflareKVRateLimiter exports', () => {
 
 describe('CloudflareKVRateLimiter validations', () => {
   test('throws if store is missing or invalid', () => {
-    expect(() => CloudflareKVRateLimiter({ limit: 1, period: 60 })).toThrow('.store (Cloudflare KV) required with get/put methods')
-    expect(() => CloudflareKVRateLimiter({ store: {}, limit: 1, period: 60 })).toThrow('.store (Cloudflare KV) required with get/put methods')
+    expect(() => CloudflareKVRateLimiter({ limit: 1, period: 60 })).toThrow('store (Cloudflare KV) required with get/put methods')
+    expect(() => CloudflareKVRateLimiter({ store: {}, limit: 1, period: 60 })).toThrow('store (Cloudflare KV) required with get/put methods')
   })
 
   test('throws if prefix is empty', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, prefix: '', limit: 1, period: 60 })).toThrow('.prefix must be a non-empty string')
+    expect(() => CloudflareKVRateLimiter({ store, prefix: '', limit: 1, period: 60 })).toThrow('prefix must be a non-empty string')
   })
 
   test('throws if limit < 1', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 0, period: 60 })).toThrow('.limit must be >= 1')
+    expect(() => CloudflareKVRateLimiter({ store, limit: 0, period: 60 })).toThrow('limit must be >= 1')
   })
 
   test('throws if period < 60', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 59 })).toThrow('.period must be >= 60 seconds (Cloudflare KV TTL minimum)')
+    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 59 })).toThrow('period must be >= 60 seconds (Cloudflare KV TTL minimum)')
   })
 
   test('throws if interval < 0', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: -1 })).toThrow('.interval must be >= 0')
+    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: -1 })).toThrow('interval must be >= 0')
+  })
+
+  test('throws if interval > period', () => {
+    const store = new MockKV()
+    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: 61 })).toThrow('interval must be <= period')
   })
 
   test('throws if key is invalid on limiter and get', async () => {
@@ -71,7 +76,7 @@ describe('CloudflareKVRateLimiter validations', () => {
   })
 
   test('calling without options uses default param and throws', () => {
-    expect(() => CloudflareKVRateLimiter()).toThrow('.store (Cloudflare KV) required with get/put methods')
+    expect(() => CloudflareKVRateLimiter()).toThrow('store (Cloudflare KV) required with get/put methods')
   })
 })
 
