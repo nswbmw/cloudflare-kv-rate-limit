@@ -30,7 +30,7 @@ const { success, limit, remaining, reset } = await ratelimiter('myKey')
 
 | Option     | Type    | Required | Default       | Description                                            |
 |------------|---------|----------|---------------|--------------------------------------------------------|
-| `binding`  | string  | No       | `'KV'`        | KV binding name (e.g., `'KV'`). The library imports `cloudflare:worker` and resolves `env[binding]`. |
+| `binding`  | string  | No       | `'KV'`        | KV binding name (e.g., `'KV'`). The library imports `cloudflare:workers` and resolves `env[binding]`. |
 | `prefix`   | string  | No       | `'ratelimit:'`| Key prefix used to namespace rate limit entries.       |
 | `limit`    | number  | Yes      | -             | Allowed requests per window (≥ 1).                     |
 | `period`   | number  | Yes      | -             | Window size in seconds (≥ 60); also used as KV TTL.    |

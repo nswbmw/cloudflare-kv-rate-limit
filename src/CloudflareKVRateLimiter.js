@@ -31,7 +31,7 @@ export function CloudflareKVRateLimiter (opts = {}) {
   let runtimeCache = null
   async function resolveKV () {
     if (!runtimeCache) {
-      runtimeCache = await import('cloudflare:worker')
+      runtimeCache = await import('cloudflare:workers')
     }
     const KV = runtimeCache.env[binding]
     assert(KV && typeof KV.get === 'function' && typeof KV.put === 'function', `KV binding not found or invalid for name: ${binding}`)
