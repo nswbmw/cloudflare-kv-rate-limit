@@ -4,7 +4,7 @@ export default {
 
   // Test file patterns
   testMatch: [
-    '**/__test__/**/*.js'
+    '**/__test__/**/*.test.js'
   ],
 
   // Coverage settings
@@ -18,7 +18,8 @@ export default {
 
   // Module resolution - correct property name
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1'
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^cloudflare:worker$': '<rootDir>/__test__/__mocks__/cloudflare-worker.js'
   },
 
   // Transform settings for ESM - disable transforms for pure ESM

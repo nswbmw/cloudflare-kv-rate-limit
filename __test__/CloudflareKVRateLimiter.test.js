@@ -1,5 +1,6 @@
-import CloudflareKVRateLimiter, { CloudflareKVRateLimiter as NamedLimiter } from '../src/CloudflareKVRateLimiter.js'
 import { jest } from '@jest/globals'
+
+const { default: CloudflareKVRateLimiter, CloudflareKVRateLimiter: NamedLimiter } = await import('../src/CloudflareKVRateLimiter.js')
 
 class MockKV {
   constructor () {
@@ -38,52 +39,71 @@ describe('CloudflareKVRateLimiter exports', () => {
 })
 
 describe('CloudflareKVRateLimiter validations', () => {
-  test('throws if store is missing or invalid', () => {
-    expect(() => CloudflareKVRateLimiter({ limit: 1, period: 60 })).toThrow('store (Cloudflare KV) required with get/put methods')
-    expect(() => CloudflareKVRateLimiter({ store: {}, limit: 1, period: 60 })).toThrow('store (Cloudflare KV) required with get/put methods')
+  test('uses default binding KV when not provided', async () => {
+    const store = new MockKV()
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ limit: 1, period: 60 })
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
+
+    const r = await limiter('test')
+    expect(r.success).toBe(true)
+    expect(store.putCalls[0].key).toBe('ratelimit:test')
+
+    nowSpy.mockRestore()
+  })
+
+  test('throws if no opts provided', () => {
+    expect(() => CloudflareKVRateLimiter()).toThrow('limit must be >= 1')
+  })
+
+  test('throws if binding type is invalid', () => {
+    expect(() => CloudflareKVRateLimiter({ binding: {}, limit: 1, period: 60 })).toThrow('binding must be a non-empty string (KV binding name)')
   })
 
   test('throws if prefix is empty', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, prefix: '', limit: 1, period: 60 })).toThrow('prefix must be a non-empty string')
+    globalThis.__TEST_ENV__ = { KV: store }
+    expect(() => CloudflareKVRateLimiter({ binding: 'KV', prefix: '', limit: 1, period: 60 })).toThrow('prefix must be a non-empty string')
   })
 
   test('throws if limit < 1', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 0, period: 60 })).toThrow('limit must be >= 1')
+    globalThis.__TEST_ENV__ = { KV: store }
+    expect(() => CloudflareKVRateLimiter({ binding: 'KV', limit: 0, period: 60 })).toThrow('limit must be >= 1')
   })
 
   test('throws if period < 60', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 59 })).toThrow('period must be >= 60 seconds (Cloudflare KV TTL minimum)')
+    globalThis.__TEST_ENV__ = { KV: store }
+    expect(() => CloudflareKVRateLimiter({ binding: 'KV', limit: 1, period: 59 })).toThrow('period must be >= 60 seconds (Cloudflare KV TTL minimum)')
   })
 
   test('throws if interval < 0', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: -1 })).toThrow('interval must be >= 0')
+    globalThis.__TEST_ENV__ = { KV: store }
+    expect(() => CloudflareKVRateLimiter({ binding: 'KV', limit: 1, period: 60, interval: -1 })).toThrow('interval must be >= 0')
   })
 
   test('throws if interval > period', () => {
     const store = new MockKV()
-    expect(() => CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: 61 })).toThrow('interval must be <= period')
+    globalThis.__TEST_ENV__ = { KV: store }
+    expect(() => CloudflareKVRateLimiter({ binding: 'KV', limit: 1, period: 60, interval: 61 })).toThrow('interval must be <= period')
   })
 
   test('throws if key is invalid on limiter and get', async () => {
     const store = new MockKV()
-    const limiter = CloudflareKVRateLimiter({ store, limit: 1, period: 60 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 1, period: 60 })
     await expect(limiter('')).rejects.toThrow('key must be a non-empty string')
     await expect(limiter.get('')).rejects.toThrow('key must be a non-empty string')
-  })
-
-  test('calling without options uses default param and throws', () => {
-    expect(() => CloudflareKVRateLimiter()).toThrow('store (Cloudflare KV) required with get/put methods')
   })
 })
 
 describe('CloudflareKVRateLimiter behavior', () => {
   test('basic success, TTL set, and get reflects state', async () => {
     const store = new MockKV()
-    const limiter = CloudflareKVRateLimiter({ store, limit: 3, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 3, period: 60, interval: 0 })
 
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
 
@@ -108,7 +128,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
 
   test('interval gating: second immediate call fails with reset = interval', async () => {
     const store = new MockKV()
-    const limiter = CloudflareKVRateLimiter({ store, limit: 3, period: 60, interval: 10 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 3, period: 60, interval: 10 })
 
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
 
@@ -131,7 +152,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
 
   test('limit gating: third call fails and reset derived from first + period', async () => {
     const store = new MockKV()
-    const limiter = CloudflareKVRateLimiter({ store, limit: 2, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 2, period: 60, interval: 0 })
 
     const nowSpy = jest.spyOn(Date, 'now')
     nowSpy.mockReturnValue(0)
@@ -157,7 +179,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
     store.map.set('ratelimit:heavy', JSON.stringify([1000, 2000, 3000]))
 
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(4000)
-    const limiter = CloudflareKVRateLimiter({ store, limit: 2, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 2, period: 60, interval: 0 })
 
     const r = await limiter('heavy')
     expect(r.success).toBe(false)
@@ -178,7 +201,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
     store.failGetKeys.add('ratelimit:err')
 
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
-    const limiter = CloudflareKVRateLimiter({ store, limit: 2, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 2, period: 60, interval: 0 })
 
     const r = await limiter('err') // underlying get throws; code treats as [] and succeeds
     expect(r.success).toBe(true)
@@ -192,7 +216,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
     store.failPut = true
 
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
-    const limiter = CloudflareKVRateLimiter({ store, limit: 2, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 2, period: 60, interval: 0 })
 
     const r = await limiter('failput')
     expect(r.success).toBe(true)
@@ -205,7 +230,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
 
   test('custom prefix is used when provided', async () => {
     const store = new MockKV()
-    const limiter = CloudflareKVRateLimiter({ store, prefix: 'p:', limit: 1, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', prefix: 'p:', limit: 1, period: 60, interval: 0 })
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
 
     const r = await limiter('x')
@@ -218,7 +244,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
   test('limiter.get period reset branch when at rate limit', async () => {
     const store = new MockKV()
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1000)
-    const limiter = CloudflareKVRateLimiter({ store, limit: 1, period: 60, interval: 0 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 1, period: 60, interval: 0 })
 
     store.map.set('ratelimit:get-limit', JSON.stringify([0]))
     const rget = await limiter.get('get-limit')
@@ -233,7 +260,8 @@ describe('CloudflareKVRateLimiter behavior', () => {
     // prepopulate with mixed order and within window
     store.map.set('ratelimit:getsort', JSON.stringify([1600, 1000, 1500]))
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(2600)
-    const limiter = CloudflareKVRateLimiter({ store, limit: 4, period: 60, interval: 1 })
+    globalThis.__TEST_ENV__ = { KV: store }
+    const limiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 4, period: 60, interval: 1 })
 
     const rget = await limiter.get('getsort')
     expect(rget.limit).toBe(4)

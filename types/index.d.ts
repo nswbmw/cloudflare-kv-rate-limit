@@ -1,10 +1,5 @@
-export interface KVStore {
-  get(key: string, type?: 'text' | 'json' | 'arrayBuffer' | 'stream'): Promise<any | null>
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>
-}
-
 export interface CloudflareKVRateLimiterOptions {
-  store: KVStore
+  binding?: string
   prefix?: string
   limit: number
   period: number

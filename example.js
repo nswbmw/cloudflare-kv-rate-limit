@@ -2,7 +2,7 @@ import CloudflareKVRateLimiter from './src/CloudflareKVRateLimiter.js'
 
 export default {
   async fetch (request, env) {
-    const ratelimiter = CloudflareKVRateLimiter({ store: env.KV, limit: 3, period: 60, interval: 10 })
+    const ratelimiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 3, period: 60, interval: 10 })
     const ip = request.headers.get('CF-Connecting-IP') || 'Unknown'
     const { success, limit, remaining, reset } = await ratelimiter(ip)
 

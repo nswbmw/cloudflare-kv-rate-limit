@@ -1,6 +1,6 @@
 {
   "name": "cloudflare-kv-rate-limit",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Cloudflare KV-based rate limiter.",
   "main": "./dist/cjs/CloudflareKVRateLimiter.js",
   "type": "module",
@@ -45,13 +45,13 @@
   "devDependencies": {
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
-    "eslint": "9.38.0",
-    "globals": "16.4.0",
+    "eslint": "9.39.1",
+    "globals": "16.5.0",
     "husky": "9.1.7",
     "jest": "30.2.0",
     "neostandard": "0.12.2",
     "tsup": "8.5.0",
-    "wrangler": "4.44.0"
+    "wrangler": "4.46.0"
   },
   "engines": {
     "node": ">=20"

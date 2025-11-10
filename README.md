@@ -14,7 +14,7 @@ $ npm i cloudflare-kv-rate-limit --save
 import CloudflareKVRateLimiter from 'cloudflare-kv-rate-limit'
 
 const ratelimiter = CloudflareKVRateLimiter({
-  store: env.KV,
+  binding: 'KV',
   prefix: 'ratelimit:',
   limit: 3,
   period: 60,
@@ -30,7 +30,7 @@ const { success, limit, remaining, reset } = await ratelimiter('myKey')
 
 | Option     | Type    | Required | Default       | Description                                            |
 |------------|---------|----------|---------------|--------------------------------------------------------|
-| `store`    | KVStore | Yes      | -             | Cloudflare KV namespace.                               |
+| `binding`  | string  | No       | `'KV'`        | KV binding name (e.g., `'KV'`). The library imports `cloudflare:worker` and resolves `env[binding]`. |
 | `prefix`   | string  | No       | `'ratelimit:'`| Key prefix used to namespace rate limit entries.       |
 | `limit`    | number  | Yes      | -             | Allowed requests per window (≥ 1).                     |
 | `period`   | number  | Yes      | -             | Window size in seconds (≥ 60); also used as KV TTL.    |
@@ -43,7 +43,7 @@ import CloudflareKVRateLimiter from 'cloudflare-kv-rate-limit'
 
 export default {
   async fetch (request, env) {
-    const ratelimiter = CloudflareKVRateLimiter({ store: env.KV, limit: 3, period: 60, interval: 10 })
+    const ratelimiter = CloudflareKVRateLimiter({ binding: 'KV', limit: 3, period: 60, interval: 10 })
     const ip = request.headers.get('CF-Connecting-IP') || 'Unknown'
     const { success, limit, remaining, reset } = await ratelimiter(ip)
 
