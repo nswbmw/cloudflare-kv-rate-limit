@@ -1,17 +1,17 @@
 {
   "name": "cloudflare-kv-rate-limit",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Cloudflare KV-based rate limiter.",
-  "main": "./dist/cjs/CloudflareKVRateLimiter.js",
+  "main": "./dist/cjs/CloudflareKVRateLimiter.cjs",
   "type": "module",
-  "module": "./dist/esm/CloudflareKVRateLimiter.js",
+  "module": "./dist/esm/CloudflareKVRateLimiter.mjs",
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./dist/esm/CloudflareKVRateLimiter.js",
-      "require": "./dist/cjs/CloudflareKVRateLimiter.js",
-      "default": "./dist/esm/CloudflareKVRateLimiter.js"
+      "import": "./dist/esm/CloudflareKVRateLimiter.mjs",
+      "require": "./dist/cjs/CloudflareKVRateLimiter.cjs",
+      "default": "./dist/esm/CloudflareKVRateLimiter.mjs"
     }
   },
   "files": [
@@ -22,7 +22,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "tsup",
+    "build": "tsdown",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "prepublishOnly": "npm run lint && npm run test && npm run build",
     "prepare": "husky",
@@ -43,15 +43,15 @@
     "limiter"
   ],
   "devDependencies": {
-    "@commitlint/cli": "20.1.0",
-    "@commitlint/config-conventional": "20.0.0",
-    "eslint": "9.39.1",
-    "globals": "16.5.0",
+    "@commitlint/cli": "20.4.1",
+    "@commitlint/config-conventional": "20.4.1",
+    "eslint": "9.39.2",
+    "globals": "17.3.0",
     "husky": "9.1.7",
     "jest": "30.2.0",
     "neostandard": "0.12.2",
-    "tsup": "8.5.0",
-    "wrangler": "4.46.0"
+    "tsdown": "^0.21.1",
+    "wrangler": "~4.49.0"
   },
   "engines": {
     "node": ">=20"
